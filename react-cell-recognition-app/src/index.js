@@ -68,13 +68,22 @@ class App extends Component {
                     <img class="img-fluid rounded" src={this.state.photoSaved}/>
                 </MDBCol>
               </MDBRow>
-              <MDBRow className="mb-4 my-5">
-                <MDBCol xl="6" md="6" className="mx-auto text-center">
+
+              <MDBRow center className=" my-5">
+                <MDBCol size="2"/>
+                <MDBCol size="4" className="mx-auto text-center">
                   <MDBBtn color="info" rounded onClick={this.toggleModal}>
                     Upload cells photo
                   </MDBBtn>
                 </MDBCol>
+                <MDBCol size="4" className="mx-auto text-center">
+                  <MDBBtn color="info" rounded onClick={this.toggleModal}>
+                    Analyze chosen photo
+                  </MDBBtn>
+                </MDBCol>
+                <MDBCol size="2"/>
               </MDBRow>
+
             </MDBCol>
           </MDBRow>
         </MDBContainer>
