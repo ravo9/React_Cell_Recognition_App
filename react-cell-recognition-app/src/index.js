@@ -12,34 +12,30 @@ class App extends Component {
     super(props);
     this.state = {
       modal: false,
-      events: []
+      events: [],
+
+      photoSaved: null,
+      photoSelected: null,
+      uploading: false
     };
+
+    this.onPhotoSelected = this.onPhotoSelected.bind(this)
   }
-  addEvent = () => {
-    var newArray = [...this.state.events];
-    newArray.push({
-      id: newArray.length ? newArray[newArray.length - 1].id + 1 : 1,
-      time: this.state.time,
-      title: this.state.title,
-      location: this.state.location,
-      description: this.state.description
-    });
-    this.setState({ events: newArray });
+
+  onPhotoSelected(event) {
     this.setState({
-      time: "",
-      title: "",
-      location: "",
-      description: ""
+        photoSelected: URL.createObjectURL(event.target.files[0])
+    })
+    console.log(this.state. photo != null)
+  }
+
+  uploadEvent = () => {
+    this.setState({
+      photoSaved: this.state.photoSelected,
+      photoSelected: null
     });
   };
 
-  handleInputChange = inputName => value => {
-    const nextValue = value;
-
-    this.setState({
-      [inputName]: nextValue
-    });
-  };
   toggleModal = () => {
     this.setState({
       modal: !this.state.modal
@@ -67,6 +63,11 @@ class App extends Component {
                   />
                 ))}
               </div>
+              <MDBRow className="my-5">
+                <MDBCol xl="6" md="6" className="mx-auto text-center">
+                    <img class="img-fluid rounded" src={this.state.photoSaved}/>
+                </MDBCol>
+              </MDBRow>
               <MDBRow className="mb-4 my-5">
                 <MDBCol xl="6" md="6" className="mx-auto text-center">
                   <MDBBtn color="info" rounded onClick={this.toggleModal}>
@@ -80,7 +81,7 @@ class App extends Component {
 
         <MDBModal isOpen={this.state.modal} toggle={this.toggleModal}>
           <MDBModalHeader
-            className="text-center"
+            className="text-center" 
             titleClass="w-100 font-weight-bold"
             toggle={this.toggleModal}
           >
@@ -88,21 +89,31 @@ class App extends Component {
           </MDBModalHeader>
           <MDBModalBody>
             <form className="mx-3 grey-text">
-              <MDBInput
-                name="photo"
-                label="Photo"
-                icon="fa-photo"
-                group
-                type="file"
-                getValue={this.handleInputChange("photo")}
-              />
+              <div className="input-group">
+                    <div className="custom-file">
+                        <input
+                            type="file"
+                            className="custom-file-input"
+                            id="inputGroupFile01"
+                            aria-describedby="inputGroupFileAddon01"
+                            onChange={this.onPhotoSelected}
+                        />
+                        <label className="custom-file-label" htmlFor="inputGroupFile01">
+                            Choose file
+                        </label>
+                    </div>
+              </div>
+              <MDBRow className="my-5">
+                <MDBCol xl="12"className="mx-auto text-center">
+                    <img class="img-fluid rounded" src={this.state.photoSelected}/>
+                </MDBCol>
+              </MDBRow>
               <MDBInput
                 name="description"
                 label="Description (optional)"
                 icon="sticky-note"
                 group
                 type="textarea"
-                getValue={this.handleInputChange("description")}
               />
             </form>
           </MDBModalBody>
@@ -111,7 +122,7 @@ class App extends Component {
               color="info"
               onClick={() => {
                 this.toggleModal();
-                this.addEvent();
+                this.uploadEvent();
               }}
             >
               Add
