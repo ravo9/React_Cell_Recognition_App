@@ -6,6 +6,7 @@ import "bootstrap-css-only/css/bootstrap.min.css";
 import "mdbreact/dist/css/mdb.css";
 import { MDBBtn, MDBInput, MDBModal, MDBModalBody, MDBModalHeader, MDBModalFooter, MDBIcon, MDBBadge, MDBContainer, MDBRow, MDBCol} from "mdbreact";
 import "./index.css";
+import Modal from "./modal.js"
 
 class App extends Component {
   constructor(props) {
@@ -14,12 +15,14 @@ class App extends Component {
       modal: false,
       events: [],
 
-      photoSaved: null,
+      photoDisplayedOnMainScreen: null,
       photoSelected: null,
-      uploading: false
+      uploading: false,
     };
 
     this.onPhotoSelected = this.onPhotoSelected.bind(this)
+    this.receiveAnalysisResultPicture = this.receiveAnalysisResultPicture.bind(this)
+    this.sendPictureToAnalysis = this.sendPictureToAnalysis.bind(this)
   }
 
   onPhotoSelected(event) {
@@ -31,7 +34,7 @@ class App extends Component {
 
   uploadEvent = () => {
     this.setState({
-      photoSaved: this.state.photoSelected,
+      photoDisplayedOnMainScreen: this.state.photoSelected,
       photoSelected: null
     });
   };
@@ -41,6 +44,21 @@ class App extends Component {
       modal: !this.state.modal
     });
   };
+
+  sendPictureToAnalysis() {
+     var xhr = new XMLHttpRequest()
+
+     xhr.addEventListener('load', this.receiveAnalysisResultPicture)
+
+     xhr.open('POST', 'https://dog.ceo/api/breeds/list/all')
+     xhr.send(JSON.stringify({ example: 'data' }))
+  }
+
+  receiveAnalysisResultPicture() {
+      this.setState({
+        photoDisplayedOnMainScreen: "https://techcrunch.com/wp-content/uploads/2014/12/matrix.jpg"
+      })
+  }
 
   render() {
     return (
@@ -65,7 +83,7 @@ class App extends Component {
               </div>
               <MDBRow className="my-5">
                 <MDBCol xl="6" md="6" className="mx-auto text-center">
-                    <img class="img-fluid rounded" src={this.state.photoSaved}/>
+                    <img class="img-fluid rounded" src={this.state.photoDisplayedOnMainScreen}/>
                 </MDBCol>
               </MDBRow>
 
@@ -77,7 +95,7 @@ class App extends Component {
                   </MDBBtn>
                 </MDBCol>
                 <MDBCol size="4" className="mx-auto text-center">
-                  <MDBBtn color="info" rounded onClick={this.toggleModal}>
+                  <MDBBtn color="info" rounded onClick={this.sendPictureToAnalysis}>
                     Analyze chosen photo
                   </MDBBtn>
                 </MDBCol>
@@ -138,6 +156,7 @@ class App extends Component {
             </MDBBtn>
           </MDBModalFooter>
         </MDBModal>
+
       </React.Fragment>
     );
   }
