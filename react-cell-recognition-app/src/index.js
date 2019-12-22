@@ -20,6 +20,8 @@ class App extends Component {
       uploading: false,
     };
 
+    console.log("Initializing...")
+
     this.onPhotoSelected = this.onPhotoSelected.bind(this)
     this.receiveAnalysisResultPicture = this.receiveAnalysisResultPicture.bind(this)
     this.sendPictureToAnalysis = this.sendPictureToAnalysis.bind(this)
@@ -48,13 +50,23 @@ class App extends Component {
   sendPictureToAnalysis() {
      var xhr = new XMLHttpRequest()
 
+     var formdata = new FormData();
+     formdata.append('picture', this.state.photoDisplayedOnMainScreen);
+     
+     xhr.open(this.method, this.url, true);
+     xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+
      xhr.addEventListener('load', this.receiveAnalysisResultPicture)
 
-     xhr.open('POST', 'https://dog.ceo/api/breeds/list/all')
-     xhr.send(JSON.stringify({ example: 'data' }))
+     xhr.open('POST', 'http://127.0.0.1:2137/analyze')
+     xhr.send(formdata)
+     console.log("Request sent.")
   }
 
   receiveAnalysisResultPicture() {
+
+      console.log("Answer received.")
+
       this.setState({
         photoDisplayedOnMainScreen: "https://techcrunch.com/wp-content/uploads/2014/12/matrix.jpg"
       })
