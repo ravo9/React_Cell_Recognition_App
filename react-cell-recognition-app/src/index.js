@@ -9,6 +9,9 @@ import "./index.css";
 import Modal from "./modal.js"
 
 class App extends Component {
+
+//  var apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/"
+
   constructor(props) {
     super(props);
     this.state = {
@@ -25,6 +28,8 @@ class App extends Component {
     this.onPhotoSelected = this.onPhotoSelected.bind(this)
     this.receiveAnalysisResultPicture = this.receiveAnalysisResultPicture.bind(this)
     this.sendPictureToAnalysis = this.sendPictureToAnalysis.bind(this)
+
+    this.apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/"
   }
 
   onPhotoSelected(event) {
@@ -50,16 +55,17 @@ class App extends Component {
   sendPictureToAnalysis() {
      var xhr = new XMLHttpRequest()
 
-     var formdata = new FormData();
-     formdata.append('picture', this.state.photoDisplayedOnMainScreen);
+     var formData = new FormData();
+     formData.append('file', this.state.photoDisplayedOnMainScreen);
      
      xhr.open(this.method, this.url, true);
      xhr.setRequestHeader('Content-Type', 'multipart/form-data');
 
      xhr.addEventListener('load', this.receiveAnalysisResultPicture)
 
-     xhr.open('POST', 'http://127.0.0.1:2137/analyze')
-     xhr.send(formdata)
+//     var path: apiPath + 'images/upload'
+     xhr.open('POST', "https://cell-recognition-app-backend.herokuapp.com/api/")
+     xhr.send(formData)
      console.log("Request sent.")
   }
 
