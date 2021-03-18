@@ -10,7 +10,10 @@ import Modal from "./modal.js"
 
 class App extends Component {
 
-//  var apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/"
+  apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/";
+
+//  initialUploadButtonText = "UPLOAD CELLS PHOTO"
+//  updatedUploadButtonText = "UPLOAD ANOTHER PHOTO"
 
   constructor(props) {
     super(props);
@@ -21,6 +24,8 @@ class App extends Component {
       photoDisplayedOnMainScreen: null,
       photoSelected: null,
       uploading: false,
+      sendButtonEnabled: false,
+      uploadButtonText: "UPLOAD CELLS PHOTO"
     };
 
     console.log("Initializing...")
@@ -28,6 +33,8 @@ class App extends Component {
     this.onPhotoSelected = this.onPhotoSelected.bind(this)
     this.receiveAnalysisResultPicture = this.receiveAnalysisResultPicture.bind(this)
     this.sendPictureToAnalysis = this.sendPictureToAnalysis.bind(this)
+
+    this.uploadEvent = this.uploadEvent.bind(this)
 
     this.apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/"
   }
@@ -39,12 +46,15 @@ class App extends Component {
     console.log(this.state. photo != null)
   }
 
-  uploadEvent = () => {
+//  uploadEvent = () => {
+  uploadEvent(event) {
     this.setState({
       photoDisplayedOnMainScreen: this.state.photoSelected,
+      sendButtonEnabled: true,
+      uploadButtonText: "UPLOAD ANOTHER PHOTO",
       photoSelected: null
     });
-  };
+  }
 
   toggleModal = () => {
     this.setState({
@@ -54,15 +64,11 @@ class App extends Component {
 
   sendPictureToAnalysis() {
      var xhr = new XMLHttpRequest()
-
      var formData = new FormData();
      formData.append('file', this.state.photoDisplayedOnMainScreen);
-     
      xhr.open(this.method, this.url, true);
      xhr.setRequestHeader('Content-Type', 'multipart/form-data');
-
      xhr.addEventListener('load', this.receiveAnalysisResultPicture)
-
 //     var path: apiPath + 'images/upload'
      xhr.open('POST', "https://cell-recognition-app-backend.herokuapp.com/api/")
      xhr.send(formData)
@@ -74,7 +80,8 @@ class App extends Component {
       console.log("Answer received.")
 
       this.setState({
-        photoDisplayedOnMainScreen: "https://techcrunch.com/wp-content/uploads/2014/12/matrix.jpg"
+        photoDisplayedOnMainScreen: "https://techcrunch.com/wp-content/uploads/2014/12/matrix.jpg",
+        sendButtonEnabled: false
       })
   }
 
@@ -85,7 +92,7 @@ class App extends Component {
           <MDBRow>
             <MDBCol md="12" className="mb-r">
               <h2 className="text-uppercase text-center my-5">Cells Recognition App</h2>
-              <h4 className="my-3 text-center">Please upload your cells photo, to let the Articifial Intelligence to find, recognize,
+              <h4 className="my-3 text-center">Please upload your cells photo, to let the Artificial Intelligence to find, recognize,
               and count them.</h4>
               <div id="schedule-items">
                 {this.state.events.map(event => (
@@ -105,21 +112,30 @@ class App extends Component {
                 </MDBCol>
               </MDBRow>
 
-              <MDBRow center className=" my-5">
+              <MDBRow center className="my-5">
                 <MDBCol size="2"/>
                 <MDBCol size="4" className="mx-auto text-center">
                   <MDBBtn color="info" rounded onClick={this.toggleModal}>
-                    Upload cells photo
+                    {this.state.uploadButtonText}
                   </MDBBtn>
                 </MDBCol>
                 <MDBCol size="4" className="mx-auto text-center">
-                  <MDBBtn color="info" rounded onClick={this.sendPictureToAnalysis}>
-                    Analyze chosen photo
+                  <MDBBtn color="info" rounded onClick={this.sendPictureToAnalysis} disabled={!this.state.sendButtonEnabled}>
+                    Send photo to analysis
                   </MDBBtn>
                 </MDBCol>
                 <MDBCol size="2"/>
               </MDBRow>
 
+            </MDBCol>
+          </MDBRow>
+
+          {/* This spacing should be responsive (dynamic).*/}
+          <MDBRow style={{height: 200 + 'px'}} />
+
+          <MDBRow>
+            <MDBCol md="12" className="mb-r">
+                <h6 className="text-center my-5">Cells Recognition App by Rafal Ozog | Dreamcatcher Apps | 2021</h6>
             </MDBCol>
           </MDBRow>
         </MDBContainer>
