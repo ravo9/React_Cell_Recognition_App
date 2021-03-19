@@ -24,8 +24,10 @@ class App extends Component {
       photoDisplayedOnMainScreen: null,
       photoSelected: null,
       uploading: false,
+      uploadButtonEnabled: true,
       sendButtonEnabled: false,
-      uploadButtonText: "UPLOAD CELLS PHOTO"
+      uploadButtonText: "UPLOAD CELLS PHOTO",
+      loadingSpinnerVisible: false
     };
 
     console.log("Initializing...")
@@ -73,15 +75,22 @@ class App extends Component {
      xhr.open('POST', "https://cell-recognition-app-backend.herokuapp.com/api/")
      xhr.send(formData)
      console.log("Request sent.")
+
+     this.setState({
+        uploadButtonEnabled: false,
+        sendButtonEnabled: false,
+        loadingSpinnerVisible: true
+     });
   }
 
   receiveAnalysisResultPicture() {
-
       console.log("Answer received.")
 
       this.setState({
         photoDisplayedOnMainScreen: "https://techcrunch.com/wp-content/uploads/2014/12/matrix.jpg",
-        sendButtonEnabled: false
+        uploadButtonEnabled: true,
+        sendButtonEnabled: false,
+        loadingSpinnerVisible: false
       })
   }
 
@@ -106,16 +115,25 @@ class App extends Component {
                   />
                 ))}
               </div>
+
               <MDBRow className="my-5">
                 <MDBCol xl="6" md="6" className="mx-auto text-center">
-                    <img class="img-fluid rounded" src={this.state.photoDisplayedOnMainScreen}/>
+                    <img class="img-fluid rounded" src={this.state.photoDisplayedOnMainScreen} />
                 </MDBCol>
               </MDBRow>
+
+              {/*<MDBRow className="my-2">
+                <MDBCol xl="6" md="6" className="mx-auto text-center">
+                    <div class="spinner-border text-primary centered" role="status" style={{visibility: this.state.loadingSpinnerVisible ? 'visible' : 'hidden' }}>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </MDBCol>
+              </MDBRow>*/}
 
               <MDBRow center className="my-5">
                 <MDBCol size="2"/>
                 <MDBCol size="4" className="mx-auto text-center">
-                  <MDBBtn color="info" rounded onClick={this.toggleModal}>
+                  <MDBBtn color="info" rounded onClick={this.toggleModal} disabled={!this.state.uploadButtonEnabled}>
                     {this.state.uploadButtonText}
                   </MDBBtn>
                 </MDBCol>
@@ -130,10 +148,7 @@ class App extends Component {
             </MDBCol>
           </MDBRow>
 
-          {/* This spacing should be responsive (dynamic).*/}
-          <MDBRow style={{height: 200 + 'px'}} />
-
-          <MDBRow>
+          <MDBRow className="fixed-bottom">
             <MDBCol md="12" className="mb-r">
                 <h6 className="text-center my-5">Cells Recognition App by Rafal Ozog | Dreamcatcher Apps | 2021</h6>
             </MDBCol>
