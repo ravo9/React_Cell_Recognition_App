@@ -21,8 +21,10 @@ class App extends Component {
       modal: false,
       events: [],
 
-      photoDisplayedOnMainScreen: null,
-      photoSelected: null,
+      photoDisplayedOnMainScreenFile: null,
+      photoDisplayedOnMainScreenURL: null,
+      photoSelectedFile: null,
+      photoSelectedURL: null,
       uploading: false,
       uploadButtonEnabled: true,
       sendButtonEnabled: false,
@@ -35,26 +37,25 @@ class App extends Component {
     this.onPhotoSelected = this.onPhotoSelected.bind(this)
     this.receiveAnalysisResultPicture = this.receiveAnalysisResultPicture.bind(this)
     this.sendPictureToAnalysis = this.sendPictureToAnalysis.bind(this)
-
     this.uploadEvent = this.uploadEvent.bind(this)
-
     this.apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/"
   }
 
   onPhotoSelected(event) {
     this.setState({
-        photoSelected: URL.createObjectURL(event.target.files[0])
+        photoSelectedFile: event.target.files[0],
+        photoSelectedURL: URL.createObjectURL(event.target.files[0])
     })
-    console.log(this.state. photo != null)
   }
 
-//  uploadEvent = () => {
   uploadEvent(event) {
     this.setState({
-      photoDisplayedOnMainScreen: this.state.photoSelected,
+      photoDisplayedOnMainScreenFile: this.state.photoSelectedFile,
+      photoDisplayedOnMainScreenURL: this.state.photoSelectedURL,
       sendButtonEnabled: true,
       uploadButtonText: "UPLOAD ANOTHER PHOTO",
-      photoSelected: null
+      photoSelectedFile: null,
+      photoSelectedURL: null,
     });
   }
 
@@ -64,15 +65,36 @@ class App extends Component {
     });
   };
 
+  receiveAnalysisResultPicture(receivedPicturePath) {
+        console.log("Answer received.")
+
+        this.setState({
+          photoDisplayedOnMainScreenFile: null,
+          photoDisplayedOnMainScreenURL: receivedPicturePath,
+          uploadButtonEnabled: true,
+          sendButtonEnabled: false,
+          loadingSpinnerVisible: false
+        })
+    }
+
   sendPictureToAnalysis() {
      var xhr = new XMLHttpRequest()
      var formData = new FormData();
-     formData.append('file', this.state.photoDisplayedOnMainScreen);
+
+     formData.append('file', this.state.photoDisplayedOnMainScreenFile);
      xhr.open(this.method, this.url, true);
      xhr.setRequestHeader('Content-Type', 'multipart/form-data');
-     xhr.addEventListener('load', this.receiveAnalysisResultPicture)
-//     var path: apiPath + 'images/upload'
-     xhr.open('POST', "https://cell-recognition-app-backend.herokuapp.com/api/")
+
+     xhr.onreadystatechange = function() {
+         if (xhr.readyState == XMLHttpRequest.DONE) {
+             console.log("Upload finished!");
+             console.log(xhr.responseText);
+             this.receiveAnalysisResultPicture(xhr.responseText);
+         }
+     }.bind(this);
+
+     xhr.open('POST', "https://cell-recognition-app-backend.herokuapp.com/api/images/upload")
+//     xhr.open('POST', "http://localhost:90/api/images/upload")
      xhr.send(formData)
      console.log("Request sent.")
 
@@ -81,17 +103,6 @@ class App extends Component {
         sendButtonEnabled: false,
         loadingSpinnerVisible: true
      });
-  }
-
-  receiveAnalysisResultPicture() {
-      console.log("Answer received.")
-
-      this.setState({
-        photoDisplayedOnMainScreen: "https://techcrunch.com/wp-content/uploads/2014/12/matrix.jpg",
-        uploadButtonEnabled: true,
-        sendButtonEnabled: false,
-        loadingSpinnerVisible: false
-      })
   }
 
   render() {
@@ -118,7 +129,7 @@ class App extends Component {
 
               <MDBRow className="my-5">
                 <MDBCol xl="6" md="6" className="mx-auto text-center">
-                    <img class="img-fluid rounded" src={this.state.photoDisplayedOnMainScreen} />
+                    <img class="img-fluid rounded" style={{maxHeight: 400,}} src={this.state.photoDisplayedOnMainScreenURL} />
                 </MDBCol>
               </MDBRow>
 
@@ -157,7 +168,7 @@ class App extends Component {
 
         <MDBModal isOpen={this.state.modal} toggle={this.toggleModal}>
           <MDBModalHeader
-            className="text-center" 
+            className="text-center"
             titleClass="w-100 font-weight-bold"
             toggle={this.toggleModal}
           >
@@ -181,7 +192,7 @@ class App extends Component {
               </div>
               <MDBRow className="my-5">
                 <MDBCol xl="12"className="mx-auto text-center">
-                    <img class="img-fluid rounded" src={this.state.photoSelected}/>
+                    <img class="img-fluid rounded" style={{maxHeight: 300,}} src={this.state.photoSelectedURL}/>
                 </MDBCol>
               </MDBRow>
               <MDBInput
