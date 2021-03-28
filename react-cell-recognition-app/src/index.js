@@ -8,12 +8,13 @@ import { MDBBtn, MDBInput, MDBModal, MDBModalBody, MDBModalHeader, MDBModalFoote
 import "./index.css";
 import Modal from "./modal.js"
 
+const API_UPLOAD_ENDPOINT_PRODUCTION = "https://cell-recognition-app-backend.herokuapp.com/api/images/upload";
+const API_UPLOAD_ENDPOINT_DEBUG = "http://localhost:90/api/images/upload";
+
+const UPLOAD_BUTTON_TEXT_INITIAL_STATE = "UPLOAD CELLS PHOTO";
+const UPLOAD_BUTTON_TEXT_AFTER_FIRST_UPLOAD_STATE = "UPLOAD ANOTHER PHOTO";
+
 class App extends Component {
-
-  apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/";
-
-//  initialUploadButtonText = "UPLOAD CELLS PHOTO"
-//  updatedUploadButtonText = "UPLOAD ANOTHER PHOTO"
 
   constructor(props) {
     super(props);
@@ -28,44 +29,45 @@ class App extends Component {
       uploading: false,
       uploadButtonEnabled: true,
       sendButtonEnabled: false,
-      uploadButtonText: "UPLOAD CELLS PHOTO",
+      uploadButtonText: UPLOAD_BUTTON_TEXT_INITIAL_STATE,
       loadingSpinnerVisible: false
     };
 
     console.log("Initializing...")
 
-    this.onPhotoSelected = this.onPhotoSelected.bind(this)
-    this.receiveAnalysisResultPicture = this.receiveAnalysisResultPicture.bind(this)
-    this.sendPictureToAnalysis = this.sendPictureToAnalysis.bind(this)
-    this.uploadEvent = this.uploadEvent.bind(this)
-    this.apiPath = "https://cell-recognition-app-backend.herokuapp.com/api/"
+    // This binding makes 'this' available in the callback.
+    this.onPhotoHasBeenSelected = this.onPhotoHasBeenSelected.bind(this)
+    this.onPictureWithResultsReceivedFromBackendAnalysis = this.onPictureWithResultsReceivedFromBackendAnalysis.bind(this)
+    this.onSendPictureToBackendAnalysisTriggered = this.onSendPictureToBackendAnalysisTriggered.bind(this)
+    this.onUploadFromLocalMachineToFrontendPreviewTriggered = this.onUploadFromLocalMachineToFrontendPreviewTriggered.bind(this)
+    this.toggleModalTriggered = this.toggleModalTriggered.bind(this)
   }
 
-  onPhotoSelected(event) {
+  onPhotoHasBeenSelected(event) {
     this.setState({
         photoSelectedFile: event.target.files[0],
         photoSelectedURL: URL.createObjectURL(event.target.files[0])
     })
   }
 
-  uploadEvent(event) {
+  onUploadFromLocalMachineToFrontendPreviewTriggered(event) {
     this.setState({
       photoDisplayedOnMainScreenFile: this.state.photoSelectedFile,
-      photoDisplayedOnMainScreenURL: this.state.photoSelectedURL,
-      sendButtonEnabled: true,
-      uploadButtonText: "UPLOAD ANOTHER PHOTO",
       photoSelectedFile: null,
+      photoDisplayedOnMainScreenURL: this.state.photoSelectedURL,
       photoSelectedURL: null,
+      sendButtonEnabled: true,
+      uploadButtonText: UPLOAD_BUTTON_TEXT_AFTER_FIRST_UPLOAD_STATE,
     });
   }
 
-  toggleModal = () => {
+  toggleModalTriggered() {
     this.setState({
       modal: !this.state.modal
     });
   };
 
-  receiveAnalysisResultPicture(receivedPicturePath) {
+  onPictureWithResultsReceivedFromBackendAnalysis(receivedPicturePath) {
         console.log("Answer received.")
 
         this.setState({
@@ -77,7 +79,7 @@ class App extends Component {
         })
     }
 
-  sendPictureToAnalysis() {
+  onSendPictureToBackendAnalysisTriggered() {
      var xhr = new XMLHttpRequest()
      var formData = new FormData();
 
@@ -89,12 +91,13 @@ class App extends Component {
          if (xhr.readyState == XMLHttpRequest.DONE) {
              console.log("Upload finished!");
              console.log(xhr.responseText);
-             this.receiveAnalysisResultPicture(xhr.responseText);
+             this.onPictureWithResultsReceivedFromBackendAnalysis(xhr.responseText);
          }
      }.bind(this);
 
-     xhr.open('POST', "https://cell-recognition-app-backend.herokuapp.com/api/images/upload")
-//     xhr.open('POST', "http://localhost:90/api/images/upload")
+     xhr.open('POST', API_UPLOAD_ENDPOINT_PRODUCTION)
+//     xhr.open('POST', API_UPLOAD_ENDPOINT_DEBUG)
+
      xhr.send(formData)
      console.log("Request sent.")
 
@@ -114,7 +117,7 @@ class App extends Component {
               <h2 className="text-uppercase text-center my-5">Cells Recognition App</h2>
               <h4 className="my-3 text-center">Please upload your cells photo, to let the Artificial Intelligence to find, recognize,
               and count them.</h4>
-              <div id="schedule-items">
+              {/*<div id="schedule-items">
                 {this.state.events.map(event => (
                   <Event
                     key={event.id}
@@ -125,7 +128,7 @@ class App extends Component {
                     description={event.description}
                   />
                 ))}
-              </div>
+              </div>*/}
 
               <MDBRow className="my-5">
                 <MDBCol xl="6" md="6" className="mx-auto text-center">
@@ -144,12 +147,12 @@ class App extends Component {
               <MDBRow center className="my-5">
                 <MDBCol size="2"/>
                 <MDBCol size="4" className="mx-auto text-center">
-                  <MDBBtn color="info" rounded onClick={this.toggleModal} disabled={!this.state.uploadButtonEnabled}>
+                  <MDBBtn color="info" rounded onClick={this.toggleModalTriggered} disabled={!this.state.uploadButtonEnabled}>
                     {this.state.uploadButtonText}
                   </MDBBtn>
                 </MDBCol>
                 <MDBCol size="4" className="mx-auto text-center">
-                  <MDBBtn color="info" rounded onClick={this.sendPictureToAnalysis} disabled={!this.state.sendButtonEnabled}>
+                  <MDBBtn color="info" rounded onClick={this.onSendPictureToBackendAnalysisTriggered} disabled={!this.state.sendButtonEnabled}>
                     Send photo to analysis
                   </MDBBtn>
                 </MDBCol>
@@ -166,11 +169,11 @@ class App extends Component {
           </MDBRow>
         </MDBContainer>
 
-        <MDBModal isOpen={this.state.modal} toggle={this.toggleModal}>
+        <MDBModal isOpen={this.state.modal} toggle={this.toggleModalTriggered}>
           <MDBModalHeader
             className="text-center"
             titleClass="w-100 font-weight-bold"
-            toggle={this.toggleModal}
+            toggle={this.toggleModalTriggered}
           >
             Upload cells photo
           </MDBModalHeader>
@@ -183,7 +186,7 @@ class App extends Component {
                             className="custom-file-input"
                             id="inputGroupFile01"
                             aria-describedby="inputGroupFileAddon01"
-                            onChange={this.onPhotoSelected}
+                            onChange={this.onPhotoHasBeenSelected}
                         />
                         <label className="custom-file-label" htmlFor="inputGroupFile01">
                             Choose file
@@ -208,8 +211,8 @@ class App extends Component {
             <MDBBtn
               color="info"
               onClick={() => {
-                this.toggleModal();
-                this.uploadEvent();
+                this.toggleModalTriggered();
+                this.onUploadFromLocalMachineToFrontendPreviewTriggered();
               }}
             >
               Add
